@@ -16,10 +16,14 @@ let xPositionScale = d3.scaleLinear().range([0, width])
 let yPositionScale = d3.scaleLinear().range([height, 0])
 
 // Create your line generator
-let graphline = d3
+let line = d3
   .line()
-  .x(d => xPositionScale(d.year))
-  .y(d => yPositionScale(d.income))
+  .x(function(d) {
+    return xPositionScale(d.year)
+  })
+  .y(function(d) {
+    return yPositionScale(d.income)
+  })
 
 // Read in your data
 Promise.all([
@@ -38,16 +42,17 @@ function ready([datapointsincome, datapointsincomeUSA]) {
     .key(d => {
       return d.country
     })
-    .entries(datapointsincome)
+    .entries([datapointsincome, datapointsincomeUSA])
 
-  console.log('Nested data looks like', nested)
+  let incomes = nested.map(d => d.income)
+  xPositionScale.domain(incomes)
 
   container
-    .selectAll('.income')
+    .selectAll('.income-graph')
     .data(nested)
     .enter()
     .append('svg')
-    .attr('class', '.income')
+    .attr('class', '.income-graph')
     .attr('height', height + margin.top + margin.bottom)
     .attr('width', width + margin.left + margin.right)
     .append('g')
@@ -64,8 +69,21 @@ function ready([datapointsincome, datapointsincomeUSA]) {
         .attr('stroke-width', 2)
         .attr('fill', 'none')
         .attr('d', d => {
-          return graphline(d.incomes)
+          return line(incomes)
         })
+
+      // HINT: This svg only gets one line
+      // and we're working with grouped (nested)
+      // data, so to get our datapoints we
+      // need to do d.values
+
+      svg
+        .append('path')
+        .datum(d.values)
+        .attr('d', line)
+        .attr('stroke-width', 2)
+        .attr('stroke', 'lightblue')
+        .attr('fill', 'none')
 
       svg
         .append('text')
