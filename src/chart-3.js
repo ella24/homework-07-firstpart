@@ -64,7 +64,7 @@ function ready([datapointsincome, datapointsincomeUSA]) {
         .attr('stroke-width', 2)
         .attr('fill', 'none')
         .attr('d', d => {
-          return graphline(d.values)
+          return graphline(d.incomes)
         })
 
       svg
