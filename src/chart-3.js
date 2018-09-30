@@ -33,7 +33,7 @@ Promise.all([
 
 // Create your ready function
 function ready([datapointsincome, datapointsincomeUSA]) {
-  const nested = d3
+  let nested = d3
     .nest()
     .key(d => {
       return d.country
