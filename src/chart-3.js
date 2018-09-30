@@ -61,28 +61,19 @@ function ready([datapointsincome, datapointsincomeUSA]) {
       let svg = d3.select(this)
 
       svg
-        .selectAll('path')
-        .data(nested)
-        .enter()
         .append('path')
-        .att('stroke', 'lightblue')
+        .datum(datapointsincome)
+        .attr('d', line)
         .attr('stroke-width', 2)
+        .attr('stroke', '#8dd3c7')
         .attr('fill', 'none')
-        .attr('d', d => {
-          return line(incomes)
-        })
-
-      // HINT: This svg only gets one line
-      // and we're working with grouped (nested)
-      // data, so to get our datapoints we
-      // need to do d.values
 
       svg
         .append('path')
-        .datum(d.values)
+        .datum(datapointsincomeUSA)
         .attr('d', line)
         .attr('stroke-width', 2)
-        .attr('stroke', 'lightblue')
+        .attr('stroke', '#fccde5')
         .attr('fill', 'none')
 
       svg
@@ -93,10 +84,14 @@ function ready([datapointsincome, datapointsincomeUSA]) {
         .attr('y', 0)
         .attr('text-anchor', 'middle')
         .attr('dy', -10)
+        .attr('font-weight', 'bold')
 
       /* Add in your axes */
 
-      let xAxis = d3.axisBottom(xPositionScale)
+      let xAxis = d3
+        .axisBottom(xPositionScale)
+        .ticks(4)
+        .tickFormat(d3.format('d'))
       svg
         .append('g')
         .attr('class', 'axis x-axis')
@@ -108,5 +103,11 @@ function ready([datapointsincome, datapointsincomeUSA]) {
         .append('g')
         .attr('class', 'axis y-axis')
         .call(yAxis.ticks(4))
+        .tickFormat(d => '$' + d)
+
+      // Want to make the tick lines dashed?
+      svg.selectAll('.tick line').attr('stroke-dasharray', '2 2')
+      // Remove the weird lines
+      svg.selectAll('.domain').remove()
     })
 }
