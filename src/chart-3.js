@@ -1,28 +1,43 @@
 import * as d3 from 'd3'
 
 // Create your margins and height/width
-let margin = { top: 25, left: 25, right: 15, bottom: 25 }
+let margin = { top: 60, left: 50, right: 50, bottom: 60 }
 
-let height = 110 - margin.top - margin.bottom
+let height = 300 - margin.top - margin.bottom
 
-let width = 110 - margin.left - margin.right
+let width = 300 - margin.left - margin.right
 
 // I'll give you this part!
 var container = d3.select('#chart-3')
 
 // Create your scales
-let xPositionScale = d3.scaleLinear().range([0, width])
+let xPositionScale = d3
+  .scaleLinear()
+  .domain([1980, 2010])
+  .range([0, width])
 
-let yPositionScale = d3.scaleLinear().range([height, 0])
+let yPositionScale = d3
+  .scaleLinear()
+  .domain([0, 20000])
+  .range([height, 0])
 
 // Create your line generator
-let line = d3
+let lineworld = d3
   .line()
   .x(function(d) {
-    return xPositionScale(d.year)
+    return xPositionScale(+d.year)
   })
   .y(function(d) {
-    return yPositionScale(d.income)
+    return yPositionScale(+d.income)
+  })
+
+let lineusa = d3
+  .line()
+  .x(function(d) {
+    return xPositionScale(+d.year)
+  })
+  .y(function(d) {
+    return yPositionScale(+d.income)
   })
 
 // Read in your data
@@ -37,19 +52,22 @@ Promise.all([
 
 // Create your ready function
 function ready([datapointsincome, datapointsincomeUSA]) {
-  let nested = d3
+  console.log(datapointsincomeUSA)
+  let nestedworld = d3
     .nest()
     .key(d => {
       return d.country
     })
-    .entries([datapointsincome, datapointsincomeUSA])
+    .entries(datapointsincome)
+  console.log('Incomes from the world data looks like', nestedworld)
 
-  let incomes = nested.map(d => d.income)
-  xPositionScale.domain(incomes)
+  // let yearUSA = datapointsincomeUSA.map(d => d.year)
+
+  // xPositionScale.domain(yearUSA)
 
   container
     .selectAll('.income-graph')
-    .data(nested)
+    .data(nestedworld)
     .enter()
     .append('svg')
     .attr('class', '.income-graph')
@@ -59,21 +77,23 @@ function ready([datapointsincome, datapointsincomeUSA]) {
     .attr('transform', `translate(${margin.left},${margin.top})`)
     .each(function(d) {
       let svg = d3.select(this)
+      let datapoints = d.values
 
       svg
         .append('path')
-        .datum(datapointsincome)
-        .attr('d', line)
+        .datum(datapoints)
+        .attr('d', lineworld)
         .attr('stroke-width', 2)
-        .attr('stroke', '#8dd3c7')
+        .attr('stroke', '#dd1c77')
         .attr('fill', 'none')
+        .lower()
 
       svg
         .append('path')
         .datum(datapointsincomeUSA)
-        .attr('d', line)
+        .attr('d', lineusa)
         .attr('stroke-width', 2)
-        .attr('stroke', '#fccde5')
+        .attr('stroke', '#a6bddb')
         .attr('fill', 'none')
 
       svg
@@ -85,29 +105,56 @@ function ready([datapointsincome, datapointsincomeUSA]) {
         .attr('text-anchor', 'middle')
         .attr('dy', -10)
         .attr('font-weight', 'bold')
+        .attr('fill', '#dd1c77')
+
+      svg
+        .append('text')
+        .text('USA')
+        .attr('x', (width * 1) / 6)
+        .attr('y', 0)
+        .attr('font-size', 13)
+        .attr('font-weight', 'bold')
+        .attr('fill', '#a6bddb')
+        .attr('dy', 20)
+        .attr('text-anchor', 'start')
 
       /* Add in your axes */
 
-      let xAxis = d3
+      var xAxis = d3
         .axisBottom(xPositionScale)
-        .ticks(4)
+        .tickSize(-height)
         .tickFormat(d3.format('d'))
+        .tickValues([1980, 1990, 2000, 2010])
+
       svg
         .append('g')
         .attr('class', 'axis x-axis')
-        .attr('transform', `translate(0,${height})`)
-        .call(xAxis.ticks(5))
+        .attr('transform', 'translate(0,' + height + ')')
+        .call(xAxis)
+      svg
+        .selectAll('.x-axis line')
+        .attr('stroke-dasharray', '2 3')
+        .attr('stroke-linecap', 'round')
+        .attr('fill', '#bdbdbd')
 
-      let yAxis = d3.axisLeft(yPositionScale)
+      var yAxis = d3
+        .axisLeft(yPositionScale)
+        .ticks(4)
+        .tickSize(-width)
+        .tickFormat(d => '$' + d)
+        .tickValues([5000, 10000, 15000, 20000])
+
       svg
         .append('g')
         .attr('class', 'axis y-axis')
-        .call(yAxis.ticks(4))
-        .tickFormat(d => '$' + d)
+        .call(yAxis)
 
-      // Want to make the tick lines dashed?
-      svg.selectAll('.tick line').attr('stroke-dasharray', '2 2')
-      // Remove the weird lines
+      svg
+        .selectAll('.y-axis line')
+        .attr('stroke-dasharray', '2 3')
+        .attr('stroke-linecap', 'round')
+        .attr('fill', '#bdbdbd')
+      svg.select('.axis').lower()
       svg.selectAll('.domain').remove()
     })
 }
