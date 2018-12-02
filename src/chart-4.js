@@ -9,8 +9,17 @@ var width = 400 - margin.left - margin.right
 var container = d3.select('#chart-4')
 
 // Create your scales
+let xPositionScale = d3
+  .scaleLinear()
+  .domain([])
+  .range([0, width])
+let yPositionScale = d3
+  .scaleLinear()
+  .domain([])
+  .range([height, 0])
 
 // Create your area generator
+
 
 // Read in your data, then call ready
 
